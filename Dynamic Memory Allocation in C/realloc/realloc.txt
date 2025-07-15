@@ -1,0 +1,44 @@
+
+
+
+                                        realloc(ptr, new_size): Resize Memory Block
+                    --------------------------------------------------------------------------------
+
+------->                                Syntax:
+                                    ptr = (type *)realloc(ptr, new_number_of_elements * sizeof(type));
+                            Example:
+                                    arr = (int *)realloc(arr, 10 * sizeof(int));
+--->    What Happens:
+
+                        1) Tries to resize existing block.
+                        2) If enough room → resizes in place.
+                        3) Else:
+
+                            -> Allocates new block.
+                            -> Copies old data.
+                            -> Frees old block.
+
+                ptr = realloc(ptr, 8 * sizeof(int));  // Expand memory
+
+
+------>>    In Memory:
+
+                    Original:
+                        ptr → 0x3000
+                        0x3000 → 10
+                        0x3004 → 20
+                        0x3008 → 30
+
+                    No room to expand after 0x300C
+
+                    So realloc allocates new:
+                        ptr → 0x4000
+                        0x4000 → 10
+                        0x4004 → 20
+                        0x4008 → 30
+                        0x400C → ??
+                        0x4010 → ??
+                        0x4014 → ??
+                        0x4018 → ??
+
+                    -->  Automatically copies old data to new memory.

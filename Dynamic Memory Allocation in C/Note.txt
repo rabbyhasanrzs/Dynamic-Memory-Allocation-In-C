@@ -1,0 +1,321 @@
+
+
+                                            Dynamic Memory Allocation:
+                            ----------------------------------------------------------
+
+-------> It is a way to allocate memory to a data structure during
+         the runtime.(runtime: the time between the program start and end)
+         we need some functions to allocate & free memory dynamically.
+         Functions for DMA:
+
+                            1) malloc();
+                            2) calloc();
+                            3) free();
+                            4) realloc();
+
+
+
+
+----->>     Basic RAM Layout (Simplified View) : 
+
+                                            |----------------------|
+                                            | Code (Text Segment)  |
+                                            |----------------------|
+                                            | Global/Static Memory |
+                                            |----------------------|
+                                            |      Heap (grows ↑)  |
+                                            |----------------------|
+                                            |      Stack (grows ↓) |
+                                            |----------------------|
+
+
+----->>  Memory Areas in C Program:
+
+
+                            | Memory Area       | Used For                        |
+                            | ----------------- | ------------------------------- |
+                            |   Stack           | Local variables, function calls |
+                            |   Heap            | Dynamically allocated memory    |
+                            |   Static/Global   | Global and static variables     |
+                            |   Code Segment    | Compiled program instructions   |
+
+
+            -->Functions like malloc(), calloc(), realloc(), and free() work in the Heap area.
+            -->Stack memory is used for local variables and function calls
+            -->Heap memory is manually managed by the programmer
+
+
+
+                                        malloc(size) — Allocate Uninitialized Memory:
+                            --------------------------------------------------------------------
+
+------>                             Syntax :
+                                    type *ptr = (type *)malloc(number_of_elements * sizeof(type));
+                            Example :
+                                    int *arr = (int *)malloc(5 * sizeof(int));
+
+
+------> What Happens Internally:
+
+                    1. malloc(size) asks the OS for size bytes from the heap.
+                    2. If sufficient memory is available:
+                        -> The OS allocates a block.
+                        -> It returns the address of the first byte of that block.
+                    3. Else returns a Null pointer.
+                    4. The returned memory is uninitialized → contains garbage values.
+
+
+------> Memory Example:
+
+                    int *ptr = (int *)malloc(4 * sizeof(int));
+
+    --> Suppose the base address returned is 0x1000.
+                    Heap Memory:
+                                    0x1000 → ??  (garbage)
+                                    0x1004 → ?? 
+                                    0x1008 → ?? 
+                                    0x1012 → ?? 
+
+            --> ptr now stores 0x1000
+            --> You can access the memory, but it holds garbage until you initialize it
+
+
+---->   Code Example: malloc and Initialization
+
+                        int *p = (int *)malloc(4 * sizeof(int));  // allocates 16 bytes
+
+                                    if (p == NULL) {
+                                        printf("Memory allocation failed.\n");
+                                        exit(1);
+                                    }
+
+------>>    Suppose malloc returns address 0x5000:
+
+                        0x5000 → ??   // 1st int
+                        0x5004 → ??   // 2nd int
+                        0x5008 → ??   // 3rd int
+                        0x500C → ??   // 4th int
+
+------>>    Step-by-Step Behavior :
+
+------>>    Before Initialization:
+
+            All 4 integers contain garbage.
+
+                            p[0] = 10;
+                            p[1] = 20;
+
+                            0x5000 → 10
+                            0x5004 → 20
+                            0x5008 → ??   ← still garbage
+                            0x500C → ??   ← still garbage
+
+
+----->  Accessing Uninitialized Memory
+
+                printf("%d", p[2]); // ← garbage value
+
+---->   Accessing Out of Bounds
+
+                        p[4] = 100;  // invalid! only 0–3 are valid
+
+                1) Accesses memory not owned by the program
+                2) Causes undefined behavior, crash, or data corruption
+
+
+------->>   Safe Access Example:
+
+
+                    for (int i = 0; i < 4; i++) {
+                        p[i] = i * 10;
+                    }
+
+
+                -> Now memory is:
+
+                        0x5000 → 0
+                        0x5004 → 10
+                        0x5008 → 20
+                        0x500C → 30
+
+
+------->>  Best Practice for malloc
+
+
+                                int *p = malloc(4 * sizeof(int));
+
+                                if (p == NULL) {
+                                    printf("Memory allocation failed.\n");
+                                    exit(1);
+                                }
+
+
+            -->  Always check if malloc returns NULL
+            -->  Initialize memory before use
+            -->  Don't access memory out of bounds
+            -->  Remember to free(p) later when you're done using it
+
+
+                            Extra Concept: Pointer Behavior in DMA
+                -------------------------------------------------------------
+
+    -->     int *p = malloc(4 * sizeof(int));
+
+                1) p is a pointer (probably stored in stack)
+                2) malloc() returns heap address (e.g. 0x6000)
+                3) p[0] = *(p + 0) → Access value at 0x6000
+                4) p[1] = *(p + 1) → 0x6004
+
+                                Stack:
+                                p → 0x6000
+
+                                Heap:
+                                0x6000 → ?
+                                0x6004 → ?
+                                0x6008 → ?
+                                0x600C → ?
+
+
+
+                            calloc(n, size): Allocate & Initialize to 0
+                --------------------------------------------------------------------
+
+----->
+                            Syntax:
+                                    type *ptr = (type *)calloc(number_of_elements, sizeof(type));
+                            Example:
+                                    int *arr = (int *)calloc(5, sizeof(int));
+
+---> What Happens:
+
+        Similar to malloc, but also clears (zeroes) the memory
+        int *ptr = (int *)calloc(4, sizeof(int));
+
+
+----> In Memory:
+
+                Heap Memory:
+                0x2000 → 0
+                0x2004 → 0
+                0x2008 → 0
+                0x200C → 0
+
+            --> Returns a pointer to zero-initialized memory block
+
+---------------->
+
+                                        realloc(ptr, new_size): Resize Memory Block
+                    --------------------------------------------------------------------------------
+
+------->                                Syntax:
+                                    ptr = (type *)realloc(ptr, new_number_of_elements * sizeof(type));
+                            Example:
+                                    arr = (int *)realloc(arr, 10 * sizeof(int));
+--->    What Happens:
+
+                        1) Tries to resize existing block.
+                        2) If enough room → resizes in place.
+                        3) Else:
+
+                            -> Allocates new block.
+                            -> Copies old data.
+                            -> Frees old block.
+
+                ptr = realloc(ptr, 8 * sizeof(int));  // Expand memory
+
+
+------>>    In Memory:
+
+                    Original:
+                        ptr → 0x3000
+                        0x3000 → 10
+                        0x3004 → 20
+                        0x3008 → 30
+
+                    No room to expand after 0x300C
+
+                    So realloc allocates new:
+                        ptr → 0x4000
+                        0x4000 → 10
+                        0x4004 → 20
+                        0x4008 → 30
+                        0x400C → ??
+                        0x4010 → ??
+                        0x4014 → ??
+                        0x4018 → ??
+
+                    -->  Automatically copies old data to new memory.
+
+
+                                    Free(ptr): Release Allocated Memory
+            ----------------------------------------------------------------------------------
+
+
+----> 
+        --->  We use it to free memory that is allocated using 
+                malloc & calloc.
+                
+                      Syntax:
+                                    free(ptr);
+                            Example:
+                                    free(arr);
+---->   What Happens:
+
+            1) Tells OS: “This memory is no longer needed”
+            2) OS marks the block as free
+            3) Memory is not zeroed, but you must not access it again
+            4) Accessing freed memory causes **undefined behavior
+
+            free(ptr);
+
+                        In Memory:
+
+                        Heap Memory before:
+                        0x5000 → 99
+                        0x5004 → 55
+
+                        free(ptr); // ptr = 0x5000
+
+                        Memory still contains:
+                        0x5000 → 99 (but invalid now!)
+                        0x5004 → 55
+
+                        -> Using ptr now is dangerous!
+
+                -> Memory is not erased, but marked “available”
+
+------------->
+
+Best Practices (Memory Safety)
+
+                    1) Always check:
+                        if (ptr == NULL) { handle_error(); }
+                    2) After free(ptr), do:
+                        ptr = NULL;
+                    3) Never:
+                        -> Access memory after free()
+                        -> Forget to free() memory
+
+                                Final Recap
+                    -------------------------------------
+
+ Function  | Action                        | Init|      Notes                         
+ --------| ------------------------------ | -----   | -----------------------------
+ malloc  | Allocate memory                |  No     | Garbage values                
+ calloc  | Allocate + zero initialize     |  Yes    | Safer for first use           
+ realloc | Resize block and preserve data |  No     | May move memory address       
+ free    | Release memory                 |  N/A    | Always do this to avoid leaks 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

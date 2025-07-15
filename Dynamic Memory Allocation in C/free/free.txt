@@ -1,0 +1,52 @@
+
+
+
+                                    Free(ptr): Release Allocated Memory
+            ----------------------------------------------------------------------------------
+
+
+----> 
+        --->  We use it to free memory that is allocated using 
+                malloc & calloc.
+                
+                      Syntax:
+                                    free(ptr);
+                            Example:
+                                    free(arr);
+---->   What Happens:
+
+            1) Tells OS: “This memory is no longer needed”
+            2) OS marks the block as free
+            3) Memory is not zeroed, but you must not access it again
+            4) Accessing freed memory causes **undefined behavior
+
+            free(ptr);
+
+                        In Memory:
+
+                        Heap Memory before:
+                        0x5000 → 99
+                        0x5004 → 55
+
+                        free(ptr); // ptr = 0x5000
+
+                        Memory still contains:
+                        0x5000 → 99 (but invalid now!)
+                        0x5004 → 55
+
+                        -> Using ptr now is dangerous!
+
+                -> Memory is not erased, but marked “available”
+
+------------->
+
+Best Practices (Memory Safety)
+
+                    1) Always check:
+                        if (ptr == NULL) { handle_error(); }
+                    2) After free(ptr), do:
+                        ptr = NULL;
+                    3) Never:
+                        -> Access memory after free()
+                        -> Forget to free() memory
+

@@ -1,0 +1,29 @@
+
+
+
+                            calloc(n, size): Allocate & Initialize to 0
+                --------------------------------------------------------------------
+
+----->
+                            Syntax:
+                                    type *ptr = (type *)calloc(number_of_elements, sizeof(type));
+                            Example:
+                                    int *arr = (int *)calloc(5, sizeof(int));
+
+---> What Happens:
+
+        Similar to malloc, but also clears (zeroes) the memory
+        int *ptr = (int *)calloc(4, sizeof(int));
+
+
+----> In Memory:
+
+                Heap Memory:
+                0x2000 → 0
+                0x2004 → 0
+                0x2008 → 0
+                0x200C → 0
+
+            --> Returns a pointer to zero-initialized memory block
+
+---------------->

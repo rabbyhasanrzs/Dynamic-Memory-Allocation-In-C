@@ -1,0 +1,175 @@
+
+                                            Dynamic Memory Allocation:
+                            ----------------------------------------------------------
+
+-------> It is a way to allocate memory to a data structure during
+         the runtime.(runtime: the time between the program start and end)
+         we need some functions to allocate & free memory dynamically.
+         Functions for DMA:
+
+                            1) malloc();
+                            2) calloc();
+                            3) free();
+                            4) realloc();
+
+
+
+
+----->>     Basic RAM Layout (Simplified View) : 
+
+                                            |----------------------|
+                                            | Code (Text Segment)  |
+                                            |----------------------|
+                                            | Global/Static Memory |
+                                            |----------------------|
+                                            |      Heap (grows ↑)  |
+                                            |----------------------|
+                                            |      Stack (grows ↓) |
+                                            |----------------------|
+
+
+----->>  Memory Areas in C Program:
+
+
+                            | Memory Area       | Used For                        |
+                            | ----------------- | ------------------------------- |
+                            |   Stack           | Local variables, function calls |
+                            |   Heap            | Dynamically allocated memory    |
+                            |   Static/Global   | Global and static variables     |
+                            |   Code Segment    | Compiled program instructions   |
+
+
+            -->Functions like malloc(), calloc(), realloc(), and free() work in the Heap area.
+            -->Stack memory is used for local variables and function calls
+            -->Heap memory is manually managed by the programmer
+
+
+
+                                        malloc(size) — Allocate Uninitialized Memory:
+                            --------------------------------------------------------------------
+
+------>                             Syntax :
+                                    type *ptr = (type *)malloc(number_of_elements * sizeof(type));
+                            Example :
+                                    int *arr = (int *)malloc(5 * sizeof(int));
+
+
+------> What Happens Internally:
+
+                    1. malloc(size) asks the OS for size bytes from the heap.
+                    2. If sufficient memory is available:
+                        -> The OS allocates a block.
+                        -> It returns the address of the first byte of that block.
+                    3. Else returns a Null pointer.
+                    4. The returned memory is uninitialized → contains garbage values.
+
+
+------> Memory Example:
+
+                    int *ptr = (int *)malloc(4 * sizeof(int));
+
+    --> Suppose the base address returned is 0x1000.
+                    Heap Memory:
+                                    0x1000 → ??  (garbage)
+                                    0x1004 → ?? 
+                                    0x1008 → ?? 
+                                    0x1012 → ?? 
+
+            --> ptr now stores 0x1000
+            --> You can access the memory, but it holds garbage until you initialize it
+
+
+---->   Code Example: malloc and Initialization
+
+                        int *p = (int *)malloc(4 * sizeof(int));  // allocates 16 bytes
+
+                                    if (p == NULL) {
+                                        printf("Memory allocation failed.\n");
+                                        exit(1);
+                                    }
+
+------>>    Suppose malloc returns address 0x5000:
+
+                        0x5000 → ??   // 1st int
+                        0x5004 → ??   // 2nd int
+                        0x5008 → ??   // 3rd int
+                        0x500C → ??   // 4th int
+
+------>>    Step-by-Step Behavior :
+
+------>>    Before Initialization:
+
+            All 4 integers contain garbage.
+
+                            p[0] = 10;
+                            p[1] = 20;
+
+                            0x5000 → 10
+                            0x5004 → 20
+                            0x5008 → ??   ← still garbage
+                            0x500C → ??   ← still garbage
+
+
+----->  Accessing Uninitialized Memory
+
+                printf("%d", p[2]); // ← garbage value
+
+---->   Accessing Out of Bounds
+
+                        p[4] = 100;  // invalid! only 0–3 are valid
+
+                1) Accesses memory not owned by the program
+                2) Causes undefined behavior, crash, or data corruption
+
+
+------->>   Safe Access Example:
+
+
+                    for (int i = 0; i < 4; i++) {
+                        p[i] = i * 10;
+                    }
+
+
+                -> Now memory is:
+
+                        0x5000 → 0
+                        0x5004 → 10
+                        0x5008 → 20
+                        0x500C → 30
+
+
+------->>  Best Practice for malloc
+
+
+                                int *p = malloc(4 * sizeof(int));
+
+                                if (p == NULL) {
+                                    printf("Memory allocation failed.\n");
+                                    exit(1);
+                                }
+
+
+            -->  Always check if malloc returns NULL
+            -->  Initialize memory before use
+            -->  Don't access memory out of bounds
+            -->  Remember to free(p) later when you're done using it
+
+
+                            Extra Concept: Pointer Behavior in DMA
+                -------------------------------------------------------------
+
+    -->     int *p = malloc(4 * sizeof(int));
+
+                1) p is a pointer (probably stored in stack)
+                2) malloc() returns heap address (e.g. 0x6000)
+                3) p[0] = *(p + 0) → Access value at 0x6000
+                4) p[1] = *(p + 1) → 0x6004
+
+                                Stack:
+                                p → 0x6000
+
+                                Heap:
+                                0x6000 → ?
+                                0x6004 → ?
+                                0x6008 → ?
+                                0x600C → ?
